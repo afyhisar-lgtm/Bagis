@@ -39,10 +39,10 @@
 </head>
 <body class="bg-slate-50 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 text-lg text-gray-800">
 
-    <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl">
+    <div class="max-w-md w-full space-y-6 bg-white p-10 rounded-2xl shadow-xl">
         
         <!-- Header -->
-        <div class="text-center">
+        <div class="text-center mb-2">
             <img src="KM.png" alt="Logo" class="mx-auto h-36 w-auto mb-5">
             <h2 class="mt-4 text-4xl font-bold text-gray-900">Secure Payment</h2>
             <p class="mt-3 text-lg text-gray-600">Complete your contribution below</p>
@@ -60,8 +60,8 @@
             </button>
         </div>
 
-        <!-- Amount Grid -->
-        <div>
+        <!-- Amount Grid Container -->
+        <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
             <label class="block text-lg font-semibold text-gray-700 mb-3">Select Amount</label>
             <div id="amount-grid" class="grid grid-cols-3 gap-4 mb-4">
                 <!-- Buttons injected by JS -->
@@ -70,12 +70,12 @@
             <!-- Custom Amount -->
             <div class="relative rounded-md shadow-sm mt-4">
                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <span class="text-gray-500 text-2xl font-bold">$</span>
+                    <span class="text-gray-500 text-xl font-bold">$</span>
                 </div>
-                <!-- Dark Green Text for input -->
+                <!-- Dark Blue Text for Monthly default, added bg-white to make input stand out -->
                 <input type="number" name="custom_amount" id="custom_amount" 
-                    class="focus:ring-[#3282CE] focus:border-[#3282CE] block w-full pl-8 pr-32 text-2xl font-bold text-green-700 border-gray-300 rounded-lg py-4 border transition-colors" 
-                    placeholder="Other" oninput="selectCustomAmount()">
+                    class="focus:ring-[#3282CE] focus:border-[#3282CE] block w-full pl-8 pr-32 text-2xl font-bold text-blue-900 border-gray-300 rounded-lg py-4 border transition-colors bg-white" 
+                    placeholder="Amount" oninput="selectCustomAmount()">
                 
                 <!-- Suffix for /monthly -->
                 <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
@@ -85,29 +85,39 @@
             <p id="amount-error" class="text-red-500 text-sm mt-2 hidden pl-1"></p>
         </div>
 
-        <!-- User Details Form -->
-        <div class="space-y-5">
+        <!-- User Details Form Container -->
+        <div class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-5">
             <div>
-                <label for="name" class="block text-lg font-semibold text-gray-700">Full Name <span class="text-red-500">*</span></label>
-                <input type="text" id="name" required class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE] transition-colors">
+                <label for="name" class="block text-lg font-semibold text-gray-700">
+                    Full Name <span id="name-req" class="text-red-500">*</span>
+                </label>
+                <input type="text" id="name" required class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE] transition-colors bg-white">
                 <p id="name-error" class="text-red-500 text-sm mt-1 hidden pl-1"></p>
             </div>
 
             <div class="grid grid-cols-2 gap-5">
                 <div>
-                    <label for="email" class="block text-lg font-semibold text-gray-700">Email Address <span class="text-red-500">*</span></label>
-                    <input type="email" id="email" required class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE] transition-colors">
+                    <!-- Changed label from Email Address to Email -->
+                    <label for="email" class="block text-lg font-semibold text-gray-700">
+                        Email <span id="email-req" class="text-red-500">*</span>
+                    </label>
+                    <input type="email" id="email" required class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE] transition-colors bg-white">
                     <p id="email-error" class="text-red-500 text-sm mt-1 hidden pl-1"></p>
                 </div>
                 <div>
-                    <label for="phone" class="block text-lg font-semibold text-gray-700">Phone <span class="text-red-500">*</span></label>
+                    <label for="phone" class="block text-lg font-semibold text-gray-700">
+                        Phone <span id="phone-req" class="text-red-500">*</span>
+                    </label>
                     <input type="tel" id="phone" required 
                         placeholder="(555) 555-5555" maxlength="14" oninput="formatPhoneNumber(this)"
-                        class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE] transition-colors">
+                        class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE] transition-colors bg-white">
                     <p id="phone-error" class="text-red-500 text-sm mt-1 hidden pl-1"></p>
                 </div>
             </div>
+        </div>
 
+        <!-- Contribution Type & Notes Container -->
+        <div class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-5">
             <!-- Contribution Type Buttons -->
             <div>
                 <label class="block text-lg font-semibold text-gray-700 mb-3">Contribution Type</label>
@@ -130,24 +140,24 @@
 
             <div>
                 <label for="notes" class="block text-lg font-semibold text-gray-700">Notes (Optional)</label>
-                <textarea id="notes" rows="2" class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE]"></textarea>
+                <textarea id="notes" rows="2" class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE] bg-white"></textarea>
             </div>
+        </div>
 
-            <!-- Cover Fees Checkbox -->
-            <div class="flex items-start pt-3">
-                <div class="flex items-center h-6">
-                    <input id="cover_fees" name="cover_fees" type="checkbox" checked onchange="updateSummary()"
-                        class="focus:ring-[#3282CE] h-5 w-5 text-[#3282CE] border-gray-300 rounded cursor-pointer">
-                </div>
-                <div class="ml-3 text-base">
-                    <label for="cover_fees" class="font-medium text-gray-700 cursor-pointer">Cover transaction fees</label>
-                    <p class="text-gray-500 text-sm" id="fee-text">Add $0.00 to cover processing costs.</p>
-                </div>
+        <!-- Cover Fees Checkbox -->
+        <div class="flex items-start pt-1 px-2">
+            <div class="flex items-center h-6">
+                <input id="cover_fees" name="cover_fees" type="checkbox" checked onchange="updateSummary()"
+                    class="focus:ring-[#3282CE] h-5 w-5 text-[#3282CE] border-gray-300 rounded cursor-pointer">
+            </div>
+            <div class="ml-3 text-base">
+                <label for="cover_fees" class="font-medium text-gray-700 cursor-pointer">Cover transaction fees</label>
+                <p class="text-gray-500 text-sm" id="fee-text">Add $0.00 to cover processing costs.</p>
             </div>
         </div>
 
         <!-- Payment Summary Display -->
-        <div id="payment-summary" class="bg-[#3282CE]/5 border border-[#3282CE]/20 rounded-xl p-6 text-center hidden transition-all mt-6">
+        <div id="payment-summary" class="bg-[#3282CE]/5 border border-[#3282CE]/20 rounded-xl p-6 text-center hidden transition-all mt-4">
             <p id="summary-text" class="text-[#3282CE] font-medium text-lg leading-relaxed">
                 <!-- Text injected by JS -->
             </p>
@@ -155,7 +165,7 @@
 
         <!-- Submit Button -->
         <button id="submit-btn" onclick="handleCheckout()" 
-            class="group relative w-full flex justify-center py-4 px-4 border border-transparent text-lg font-bold rounded-full text-white bg-[#3282CE] hover:bg-[#2868a5] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3282CE] transition-colors shadow-lg mt-8">
+            class="group relative w-full flex justify-center py-4 px-4 border border-transparent text-lg font-bold rounded-full text-white bg-[#3282CE] hover:bg-[#2868a5] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3282CE] transition-colors shadow-lg mt-6">
             <span class="absolute left-0 inset-y-0 flex items-center pl-6">
                 <i class="ph-bold ph-lock-key text-blue-200 group-hover:text-blue-100 text-xl"></i>
             </span>
@@ -222,9 +232,16 @@
             const btnMonthly = document.getElementById('btn-monthly');
             const btnOnetime = document.getElementById('btn-onetime');
             const suffix = document.getElementById('amount-suffix');
+            const customInput = document.getElementById('custom_amount');
             
             const activeClasses = ['bg-[#3282CE]', 'text-white', 'shadow-md'];
             const inactiveClasses = ['text-gray-500', 'hover:text-gray-900'];
+
+            // Toggle Contact Field Requirements
+            const nameInput = document.getElementById('name');
+            const emailInput = document.getElementById('email');
+            const phoneInput = document.getElementById('phone');
+            const reqIds = ['name-req', 'email-req', 'phone-req'];
 
             if (monthly) {
                 btnMonthly.classList.add(...activeClasses);
@@ -234,6 +251,23 @@
                 
                 // Show suffix for monthly
                 suffix.classList.remove('hidden');
+
+                // Custom amount color: Dark Blue
+                customInput.classList.remove('text-purple-700');
+                customInput.classList.add('text-blue-900');
+
+                // Make fields mandatory with *
+                nameInput.required = true;
+                emailInput.required = true;
+                phoneInput.required = true;
+                
+                reqIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    el.classList.remove('hidden');
+                    el.textContent = '*';
+                    el.className = 'text-red-500';
+                });
+
             } else {
                 btnOnetime.classList.add(...activeClasses);
                 btnOnetime.classList.remove(...inactiveClasses);
@@ -242,13 +276,31 @@
                 
                 // Hide suffix for one-time
                 suffix.classList.add('hidden');
+
+                // Custom amount color: Purple
+                customInput.classList.remove('text-blue-900');
+                customInput.classList.add('text-purple-700');
+
+                // Make fields optional with (Optional) text
+                nameInput.required = false;
+                emailInput.required = false;
+                phoneInput.required = false;
+                
+                reqIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    el.classList.remove('hidden');
+                    el.textContent = '(Optional)';
+                    el.className = 'text-gray-400 text-sm font-normal ml-1';
+                });
+                
+                // Clear any existing validation errors on these fields when switching to optional
+                clearErrors();
             }
 
             renderButtons();
             selectedAmount = null;
             document.getElementById('custom_amount').value = '';
             updateSummary();
-            clearErrors(); 
         }
 
         function renderButtons() {
@@ -407,15 +459,26 @@
                 return;
             }
             
-            if (!name) { showError('name', "Please enter your Full Name."); return; }
-            
-            if (!email) { showError('email', "Please enter your Email Address."); return; }
-            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailPattern.test(email)) { showError('email', "Please enter a valid email address."); return; }
-            
-            if (!phone) { showError('phone', "Please enter your Phone Number."); return; }
-            const phoneClean = phone.replace(/\D/g, '');
-            if (phoneClean.length !== 10) { showError('phone', "Please enter a valid 10-digit US phone number."); return; }
+            // Validation: Only require fields if isMonthly is true
+            if (isMonthly) {
+                if (!name) { showError('name', "Please enter your Full Name."); return; }
+                if (!email) { showError('email', "Please enter your Email Address."); return; }
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(email)) { showError('email', "Please enter a valid email address."); return; }
+                if (!phone) { showError('phone', "Please enter your Phone Number."); return; }
+                const phoneClean = phone.replace(/\D/g, '');
+                if (phoneClean.length !== 10) { showError('phone', "Please enter a valid 10-digit US phone number."); return; }
+            } else {
+                // Optional validation for One-Time if fields ARE filled
+                if (email) {
+                    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailPattern.test(email)) { showError('email', "Please enter a valid email address."); return; }
+                }
+                if (phone) {
+                    const phoneClean = phone.replace(/\D/g, '');
+                    if (phoneClean.length !== 10) { showError('phone', "Please enter a valid 10-digit US phone number."); return; }
+                }
+            }
 
             const coverFees = document.getElementById('cover_fees').checked;
             let amountToSend;
@@ -473,8 +536,4 @@
         loadConfig();
     </script>
 </body>
-
 </html>
-
-
-
