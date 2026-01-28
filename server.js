@@ -99,6 +99,16 @@ app.post('/create-checkout-session', async (req, res) => {
     // Extract contributionType from the details sent by frontend
     const { name, email, phone, notes, contributionType } = customerDetails; 
     
+    // Server-side validation for amount
+    if (!amount || isNaN(amount) || amount <= 0) {
+        return res.status(400).json({ error: 'Invalid donation amount.' });
+    }
+    
+    // Optional: Enforce max amount on server too for safety
+    if (amount > 10000) {
+         return res.status(400).json({ error: 'Donation amount exceeds the maximum limit of $10,000.' });
+    }
+    
     // Default to localhost if DOMAIN is not set in .env
     const domain = process.env.DOMAIN || 'http://localhost:4242';
 
@@ -119,7 +129,7 @@ app.post('/create-checkout-session', async (req, res) => {
                 price_data: {
                     currency: 'usd',
                     product_data: {
-                        // Dynamic Product Name: e.g., "Monthly Scholarship" or "One-Time charity"
+                        // Dynamic Product Name: e.g., "Monthly Scholarship" or "One-Time Alms"
                         name: isMonthly ? `Monthly ${contributionType || 'Donation'}` : `One-Time ${contributionType || 'Donation'}`,
                         description: isMonthly ? 'Recurring monthly support' : 'Single contribution',
                     },
