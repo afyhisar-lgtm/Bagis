@@ -454,8 +454,15 @@
 
             // V2 Update: Minimum Amount Validation
             const minAmount = isMonthly ? 10 : 5;
+            const maxAmount = 10000;
+            
             if (selectedAmount < minAmount) {
                 showError('custom_amount', `Minimum ${isMonthly ? 'monthly' : 'one-time'} donation is $${minAmount}.`);
+                return;
+            }
+            
+            if (selectedAmount > maxAmount) {
+                showError('custom_amount', `Maximum donation amount is $${maxAmount.toLocaleString()}.`);
                 return;
             }
             
