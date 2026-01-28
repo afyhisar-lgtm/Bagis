@@ -70,11 +70,11 @@
             <!-- Custom Amount -->
             <div class="relative rounded-md shadow-sm mt-4">
                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <span class="text-gray-500 text-xl font-bold">$</span>
+                    <span class="text-gray-500 text-2xl font-bold">$</span>
                 </div>
-                <!-- Dark Blue Text for Monthly default, added bg-white to make input stand out -->
+                <!-- Dark Blue Text for Monthly default, text-3xl for value, placeholder:text-lg for label -->
                 <input type="number" name="custom_amount" id="custom_amount" 
-                    class="focus:ring-[#3282CE] focus:border-[#3282CE] block w-full pl-8 pr-32 text-2xl font-bold text-blue-900 border-gray-300 rounded-lg py-4 border transition-colors bg-white" 
+                    class="focus:ring-[#3282CE] focus:border-[#3282CE] block w-full pl-8 pr-32 text-3xl placeholder:text-lg placeholder:font-normal font-bold text-blue-900 border-gray-300 rounded-lg py-4 border transition-colors bg-white" 
                     placeholder="Amount" oninput="selectCustomAmount()">
                 
                 <!-- Suffix for /monthly -->
