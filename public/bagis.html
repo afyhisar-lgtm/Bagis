@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stripe Payment Portal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Google Fonts: Source Sans Pro (Source Sans 3) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <style>
+        body {
+            font-family: 'Source Sans 3', sans-serif;
+        }
+        
+        .amount-btn.selected {
+            background-color: #3282CE; /* Updated Blue */
+            color: white;
+            border-color: #3282CE;
+        }
+
+        /* Hide number input spinners */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield; /* Firefox */
+            appearance: textfield;      /* Standard */
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 text-lg text-gray-800">
+
+    <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl">
+        
+        <!-- Header -->
+        <div class="text-center">
+            <img src="KM.png" alt="Logo" class="mx-auto h-36 w-auto mb-5">
+            <h2 class="mt-4 text-4xl font-bold text-gray-900">Secure Payment</h2>
+            <p class="mt-3 text-lg text-gray-600">Complete your contribution below</p>
+        </div>
+
+        <!-- Frequency Toggle -->
+        <div class="flex rounded-full shadow-sm bg-gray-100 p-1.5" role="group">
+            <button type="button" id="btn-monthly" onclick="setFrequency(true)" 
+                class="flex-1 px-6 py-3 text-lg font-semibold rounded-full transition-all duration-200">
+                Monthly
+            </button>
+            <button type="button" id="btn-onetime" onclick="setFrequency(false)" 
+                class="flex-1 px-6 py-3 text-lg font-semibold rounded-full transition-all duration-200">
+                One Time
+            </button>
+        </div>
+
+        <!-- Amount Grid -->
+        <div>
+            <label class="block text-lg font-semibold text-gray-700 mb-3">Select Amount</label>
+            <div id="amount-grid" class="grid grid-cols-3 gap-4 mb-4">
+                <!-- Buttons injected by JS -->
+            </div>
+            
+            <!-- Custom Amount -->
+            <div class="relative rounded-md shadow-sm mt-4">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <span class="text-gray-500 text-xl font-bold">$</span>
+                </div>
+                <!-- Dark Green Text for input -->
+                <input type="number" name="custom_amount" id="custom_amount" 
+                    class="focus:ring-[#3282CE] focus:border-[#3282CE] block w-full pl-8 pr-32 text-2xl font-bold text-green-700 border-gray-300 rounded-lg py-4 border transition-colors" 
+                    placeholder="Custom Amount" oninput="selectCustomAmount()">
+                
+                <!-- Suffix for /monthly -->
+                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    <span id="amount-suffix" class="text-gray-500 text-lg font-semibold hidden">/monthly</span>
+                </div>
+            </div>
+            <p id="amount-error" class="text-red-500 text-sm mt-2 hidden pl-1"></p>
+        </div>
+
+        <!-- User Details Form -->
+        <div class="space-y-5">
+            <div>
+                <label for="name" class="block text-lg font-semibold text-gray-700">Full Name <span class="text-red-500">*</span></label>
+                <input type="text" id="name" required class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE] transition-colors">
+                <p id="name-error" class="text-red-500 text-sm mt-1 hidden pl-1"></p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-5">
+                <div>
+                    <label for="email" class="block text-lg font-semibold text-gray-700">Email Address <span class="text-red-500">*</span></label>
+                    <input type="email" id="email" required class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE] transition-colors">
+                    <p id="email-error" class="text-red-500 text-sm mt-1 hidden pl-1"></p>
+                </div>
+                <div>
+                    <label for="phone" class="block text-lg font-semibold text-gray-700">Phone <span class="text-red-500">*</span></label>
+                    <input type="tel" id="phone" required 
+                        placeholder="(555) 555-5555" maxlength="14" oninput="formatPhoneNumber(this)"
+                        class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE] transition-colors">
+                    <p id="phone-error" class="text-red-500 text-sm mt-1 hidden pl-1"></p>
+                </div>
+            </div>
+
+            <!-- Contribution Type Buttons -->
+            <div>
+                <label class="block text-lg font-semibold text-gray-700 mb-3">Contribution Type</label>
+                <div class="grid grid-cols-3 gap-4">
+                    <button type="button" onclick="selectType('Donation', this)"
+                        class="type-btn w-full border rounded-full py-3 text-base font-semibold focus:outline-none transition-all duration-200 bg-[#3282CE] text-white border-[#3282CE] shadow-md ring-2 ring-[#3282CE]/50 ring-offset-1">
+                        Donation
+                    </button>
+                    <button type="button" onclick="selectType('Scholarship', this)"
+                        class="type-btn w-full border rounded-full py-3 text-base font-semibold focus:outline-none transition-all duration-200 border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+                        Scholarship <span class="text-sm font-normal block">(burs)</span>
+                    </button>
+                    <!-- Charity (sadaka) -->
+                    <button type="button" onclick="selectType('Charity', this)"
+                        class="type-btn w-full border rounded-full py-3 text-base font-semibold focus:outline-none transition-all duration-200 border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+                        Charity <span class="text-sm font-normal block">(sadaka)</span>
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <label for="notes" class="block text-lg font-semibold text-gray-700">Notes (Optional)</label>
+                <textarea id="notes" rows="2" class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE]"></textarea>
+            </div>
+
+            <!-- Cover Fees Checkbox -->
+            <div class="flex items-start pt-3">
+                <div class="flex items-center h-6">
+                    <input id="cover_fees" name="cover_fees" type="checkbox" checked onchange="updateSummary()"
+                        class="focus:ring-[#3282CE] h-5 w-5 text-[#3282CE] border-gray-300 rounded cursor-pointer">
+                </div>
+                <div class="ml-3 text-base">
+                    <label for="cover_fees" class="font-medium text-gray-700 cursor-pointer">Cover transaction fees</label>
+                    <p class="text-gray-500 text-sm" id="fee-text">Add $0.00 to cover processing costs.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Summary Display -->
+        <div id="payment-summary" class="bg-[#3282CE]/5 border border-[#3282CE]/20 rounded-xl p-6 text-center hidden transition-all mt-6">
+            <p id="summary-text" class="text-[#3282CE] font-medium text-lg leading-relaxed">
+                <!-- Text injected by JS -->
+            </p>
+        </div>
+
+        <!-- Submit Button -->
+        <button id="submit-btn" onclick="handleCheckout()" 
+            class="group relative w-full flex justify-center py-4 px-4 border border-transparent text-lg font-bold rounded-full text-white bg-[#3282CE] hover:bg-[#2868a5] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3282CE] transition-colors shadow-lg mt-8">
+            <span class="absolute left-0 inset-y-0 flex items-center pl-6">
+                <i class="ph-bold ph-lock-key text-blue-200 group-hover:text-blue-100 text-xl"></i>
+            </span>
+            Proceed to Payment
+        </button>
+        
+        <p id="error-message" class="text-red-500 text-base text-center hidden mt-4 font-semibold"></p>
+
+        <!-- Customer Portal Link -->
+        <div class="text-center mt-8">
+            <a id="portal-link" href="#" class="text-base text-gray-500 hover:text-[#3282CE] transition-colors">
+                Already a monthly supporter? <span class="underline decoration-2">Access the Customer Portal</span> to manage your donations.
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Logic -->
+    <script>
+        // --- FEE CONFIGURATION ---
+        const FEE_PERCENT = 0.022; // 2.2% Non-profit rate
+        const FEE_FIXED = 0.30;    // $0.30 Fixed fee
+
+        // --- STYLES ---
+        const BTN_BASE = "amount-btn w-full border rounded-full py-3 text-lg font-semibold focus:outline-none transition-all duration-200";
+        const BTN_INACTIVE = `${BTN_BASE} border-gray-300 bg-white text-gray-700 hover:bg-gray-50`;
+        const BTN_ACTIVE = `${BTN_BASE} bg-[#3282CE] text-white border-[#3282CE] shadow-md ring-2 ring-[#3282CE]/50 ring-offset-1`;
+
+        let configData = {
+            monthly_amounts: [50, 100, 200, 300, 500, 1000],
+            onetime_amounts: [20, 30, 50, 100, 200],
+            customer_portal_link: "#"
+        };
+        
+        let isMonthly = true; // Default
+        let selectedAmount = null;
+        let selectedType = 'Donation'; // Default Contribution Type
+
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                if (response.ok) {
+                    configData = await response.json();
+                }
+            } catch (err) {
+                console.log("Using default configuration (offline mode)");
+            }
+            
+            const portalLinkEl = document.getElementById('portal-link');
+            if (configData.customer_portal_link) {
+                portalLinkEl.href = configData.customer_portal_link;
+            }
+
+            renderButtons();
+            setFrequency(true); 
+        }
+
+        function formatPhoneNumber(input) {
+            let x = input.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
+            input.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+        }
+
+        function setFrequency(monthly) {
+            isMonthly = monthly;
+            const btnMonthly = document.getElementById('btn-monthly');
+            const btnOnetime = document.getElementById('btn-onetime');
+            const suffix = document.getElementById('amount-suffix');
+            
+            const activeClasses = ['bg-[#3282CE]', 'text-white', 'shadow-md'];
+            const inactiveClasses = ['text-gray-500', 'hover:text-gray-900'];
+
+            if (monthly) {
+                btnMonthly.classList.add(...activeClasses);
+                btnMonthly.classList.remove(...inactiveClasses);
+                btnOnetime.classList.remove(...activeClasses);
+                btnOnetime.classList.add(...inactiveClasses);
+                
+                // Show suffix for monthly
+                suffix.classList.remove('hidden');
+            } else {
+                btnOnetime.classList.add(...activeClasses);
+                btnOnetime.classList.remove(...inactiveClasses);
+                btnMonthly.classList.remove(...activeClasses);
+                btnMonthly.classList.add(...inactiveClasses);
+                
+                // Hide suffix for one-time
+                suffix.classList.add('hidden');
+            }
+
+            renderButtons();
+            selectedAmount = null;
+            document.getElementById('custom_amount').value = '';
+            updateSummary();
+            clearErrors(); 
+        }
+
+        function renderButtons() {
+            if (!configData) return;
+            const grid = document.getElementById('amount-grid');
+            grid.innerHTML = ''; 
+            
+            const amounts = isMonthly ? configData.monthly_amounts : configData.onetime_amounts;
+
+            amounts.forEach(amount => {
+                const btn = document.createElement('button');
+                btn.className = BTN_INACTIVE;
+                btn.textContent = `$${amount}`;
+                btn.onclick = () => selectAmount(amount, btn);
+                grid.appendChild(btn);
+            });
+        }
+
+        function selectAmount(amount, btnElement) {
+            selectedAmount = amount;
+            // V2 Update: Populate Custom Amount input with selected amount
+            document.getElementById('custom_amount').value = amount;
+            
+            document.querySelectorAll('.amount-btn').forEach(b => b.className = BTN_INACTIVE);
+            if(btnElement) btnElement.className = BTN_ACTIVE;
+            updateSummary();
+            clearErrors(); 
+        }
+
+        function selectCustomAmount() {
+            const input = document.getElementById('custom_amount');
+            selectedAmount = parseFloat(input.value);
+            document.querySelectorAll('.amount-btn').forEach(b => b.className = BTN_INACTIVE);
+            updateSummary();
+            clearErrors(); 
+        }
+
+        function selectType(type, btnElement) {
+            selectedType = type;
+            const baseClasses = "type-btn w-full border rounded-full py-3 text-base font-semibold focus:outline-none transition-all duration-200";
+            const inactiveClasses = "border-gray-300 bg-white text-gray-700 hover:bg-gray-50";
+            const activeClasses = "bg-[#3282CE] text-white border-[#3282CE] shadow-md ring-2 ring-[#3282CE]/50 ring-offset-1";
+
+            document.querySelectorAll('.type-btn').forEach(b => {
+                b.className = `${baseClasses} ${inactiveClasses}`;
+            });
+            btnElement.className = `${baseClasses} ${activeClasses}`;
+        }
+
+        function updateSummary() {
+            const summaryBox = document.getElementById('payment-summary');
+            const summaryText = document.getElementById('summary-text');
+            const feeText = document.getElementById('fee-text');
+            const coverFees = document.getElementById('cover_fees').checked;
+            
+            let baseAmount = selectedAmount;
+            if (!baseAmount) {
+                const customVal = parseFloat(document.getElementById('custom_amount').value);
+                if (customVal > 0) baseAmount = customVal;
+            }
+
+            if (baseAmount && baseAmount > 0) {
+                // Calculate Fee Logic
+                let totalToCharge, netForRaindrop, feeForBank;
+
+                if (coverFees) {
+                    // Logic: Donor covers fees. Raindrop gets Base.
+                    // Total = (Base + 0.30) / (1 - 0.022)
+                    totalToCharge = (baseAmount + FEE_FIXED) / (1 - FEE_PERCENT);
+                    feeForBank = totalToCharge - baseAmount;
+                    netForRaindrop = baseAmount;
+                } else {
+                    // Logic: Donor does NOT cover fees. Raindrop pays fees from Base.
+                    // Total = Base
+                    totalToCharge = baseAmount;
+                    feeForBank = (baseAmount * FEE_PERCENT) + FEE_FIXED;
+                    netForRaindrop = baseAmount - feeForBank;
+                }
+                
+                // Update checkbox helper text (always show fee needed to cover)
+                const feeToCover = ((baseAmount + FEE_FIXED) / (1 - FEE_PERCENT)) - baseAmount;
+                const formattedFeeHelper = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(feeToCover);
+                feeText.textContent = `Add ${formattedFeeHelper} to cover processing costs.`;
+
+                summaryBox.classList.remove('hidden');
+                
+                const fmtTotal = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalToCharge);
+                const fmtNet = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(netForRaindrop);
+                const fmtFee = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(feeForBank);
+                
+                let text = `You are contributing <span class="font-bold text-[#3282CE] text-xl">${fmtTotal}</span>`;
+                if (isMonthly) text += ' Monthly';
+                else text += ' One time';
+
+                // Display Breakdown with Frontend Math
+                text += `<div class="text-base text-gray-500 mt-2 font-normal">(${fmtNet} for Raindrop Dallas + ${fmtFee} bank fees)</div>`;
+
+                summaryText.innerHTML = text;
+            } else {
+                summaryBox.classList.add('hidden');
+                feeText.textContent = "Add $0.00 to cover processing costs.";
+            }
+        }
+
+        // --- ERROR HANDLING ---
+        function clearErrors() {
+            document.getElementById('error-message').classList.add('hidden');
+            ['amount-error', 'name-error', 'email-error', 'phone-error'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            ['custom_amount', 'name', 'email', 'phone'].forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+                el.classList.add('border-gray-300', 'focus:border-[#3282CE]', 'focus:ring-[#3282CE]');
+            });
+        }
+
+        function showError(inputId, message) {
+            const errorTextId = inputId === 'custom_amount' ? 'amount-error' : `${inputId}-error`;
+            const errorEl = document.getElementById(errorTextId);
+            if (errorEl) {
+                errorEl.textContent = message;
+                errorEl.classList.remove('hidden');
+            }
+            const inputEl = document.getElementById(inputId);
+            if (inputEl) {
+                inputEl.classList.remove('border-gray-300', 'focus:border-[#3282CE]', 'focus:ring-[#3282CE]');
+                inputEl.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+                inputEl.focus(); 
+            }
+        }
+
+        async function handleCheckout() {
+            const nameInput = document.getElementById('name');
+            const emailInput = document.getElementById('email');
+            const phoneInput = document.getElementById('phone');
+            const notesInput = document.getElementById('notes');
+            const generalError = document.getElementById('error-message');
+
+            const name = nameInput.value;
+            const email = emailInput.value;
+            const phone = phoneInput.value;
+            const notes = notesInput.value;
+
+            clearErrors();
+
+            if (!selectedAmount || selectedAmount <= 0) {
+                showError('custom_amount', "Please select a valid amount.");
+                return;
+            }
+
+            // V2 Update: Minimum Amount Validation
+            const minAmount = isMonthly ? 10 : 5;
+            if (selectedAmount < minAmount) {
+                showError('custom_amount', `Minimum ${isMonthly ? 'monthly' : 'one-time'} donation is $${minAmount}.`);
+                return;
+            }
+            
+            if (!name) { showError('name', "Please enter your Full Name."); return; }
+            
+            if (!email) { showError('email', "Please enter your Email Address."); return; }
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) { showError('email', "Please enter a valid email address."); return; }
+            
+            if (!phone) { showError('phone', "Please enter your Phone Number."); return; }
+            const phoneClean = phone.replace(/\D/g, '');
+            if (phoneClean.length !== 10) { showError('phone', "Please enter a valid 10-digit US phone number."); return; }
+
+            const coverFees = document.getElementById('cover_fees').checked;
+            let amountToSend;
+
+            if (coverFees) {
+                // Gross up calculation inside handleCheckout as requested
+                amountToSend = (selectedAmount + FEE_FIXED) / (1 - FEE_PERCENT);
+            } else {
+                // Send raw amount
+                amountToSend = selectedAmount;
+            }
+
+            const btn = document.getElementById('submit-btn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin mr-2 text-xl"></i> Processing...`;
+
+            try {
+                const response = await fetch('/create-checkout-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: amountToSend,
+                        isMonthly: isMonthly,
+                        customerDetails: { 
+                            name, 
+                            email, 
+                            phone, 
+                            notes,
+                            contributionType: selectedType
+                        }
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    throw new Error(data.error || 'Unknown error occurred');
+                }
+            } catch (err) {
+                generalError.textContent = "Demo Mode: " + err.message;
+                generalError.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                
+                if(err.message.includes('Unexpected token')) {
+                     alert(`Demo Mode: Backend not connected.\n\nData sent:\nAmount: $${amountToSend.toFixed(2)}\nType: ${isMonthly ? 'Monthly' : 'One-Time'}\nContribution: ${selectedType}\nPhone: ${phone}`);
+                }
+            }
+        }
+
+        // Initialize
+        loadConfig();
+    </script>
+</body>
+</html>
