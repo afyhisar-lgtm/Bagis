@@ -8,21 +8,45 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- Google Fonts: Source Sans Pro (Source Sans 3) -->
+    <!-- Google Fonts: Source Sans 3 (Body) & Merriweather (Headings) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700;900&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
     
     <!-- Custom Styles -->
     <style>
         body {
             font-family: 'Source Sans 3', sans-serif;
         }
+        h1, h2, h3 {
+            font-family: 'Merriweather', serif;
+        }
         
+        /* Smooth Heart Animation */
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.3); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.3); }
+            70% { transform: scale(1); }
+        }
+
         .amount-btn.selected {
-            background-color: #3282CE; /* Updated Blue */
+            background-color: #3282CE;
             color: white;
             border-color: #3282CE;
+            /* Soft colored shadow for "lifted" effect */
+            box-shadow: 0 10px 25px -5px rgba(50, 130, 206, 0.4), 0 8px 10px -6px rgba(50, 130, 206, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .amount-btn.selected i.heart-icon {
+            display: inline-block;
+            animation: heartBeat 1.3s ease-in-out infinite;
+        }
+
+        .amount-btn {
+            transition: all 0.2s ease-in-out;
         }
 
         /* Hide number input spinners */
@@ -32,144 +56,162 @@
             margin: 0; 
         }
         input[type=number] {
-            -moz-appearance: textfield; /* Firefox */
-            appearance: textfield;      /* Standard */
+            -moz-appearance: textfield;
+            appearance: textfield;
         }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 text-lg text-gray-800">
+<!-- Warm Gradient Background -->
+<body class="bg-gradient-to-br from-orange-50 via-white to-blue-50 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 text-lg text-gray-800">
 
-    <div class="max-w-md w-full space-y-6 bg-white p-10 rounded-2xl shadow-xl">
+    <!-- Card Container: Removed p-10 to allow Hero Image to bleed to edges -->
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden relative">
         
-        <!-- Header -->
-        <div class="text-center mb-2">
-            <img src="KM.png" alt="Logo" class="mx-auto h-36 w-auto mb-5">
-            <h2 class="mt-4 text-4xl font-bold text-gray-900">Secure Payment</h2>
-            <p class="mt-3 text-lg text-gray-600">Complete your contribution below</p>
+        <!-- Hero Image -->
+        <div class="h-40 w-full bg-gray-200 relative">
+            <img src="donate.png" alt="Make a difference" class="w-full h-full object-cover" onerror="this.style.display='none'; this.parentElement.style.height='20px'"> <!-- Fallback if image missing -->
+            <div class="absolute inset-0 bg-gradient-to-t from-white/90 to-transparent"></div>
         </div>
 
-        <!-- Frequency Toggle -->
-        <div class="flex rounded-full shadow-sm bg-gray-100 p-1.5" role="group">
-            <button type="button" id="btn-monthly" onclick="setFrequency(true)" 
-                class="flex-1 px-6 py-3 text-lg font-semibold rounded-full transition-all duration-200">
-                Monthly
-            </button>
-            <button type="button" id="btn-onetime" onclick="setFrequency(false)" 
-                class="flex-1 px-6 py-3 text-lg font-semibold rounded-full transition-all duration-200">
-                One Time
-            </button>
-        </div>
-
-        <!-- Amount Grid Container -->
-        <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
-            <label class="block text-lg font-semibold text-gray-700 mb-3">Select Amount</label>
-            <div id="amount-grid" class="grid grid-cols-3 gap-4 mb-4">
-                <!-- Buttons injected by JS -->
-            </div>
+        <!-- Content Wrapper -->
+        <div class="px-8 pb-10 pt-2 space-y-6">
             
-            <!-- Custom Amount -->
-            <div class="relative rounded-md shadow-sm mt-4">
-                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <span class="text-gray-500 text-2xl font-bold">$</span>
+            <!-- Header -->
+            <div class="text-center mb-4 relative -mt-16">
+                <!-- Logo with white background circle/shadow to pop over hero/gradient -->
+                <!-- Changed h-40 w-40 to h-32 w-32 and increased padding to p-4 -->
+                <div class="mx-auto h-32 w-32 bg-white rounded-full p-4 shadow-lg mb-4 flex items-center justify-center">
+                    <img src="KM.png" alt="Logo" class="h-full w-auto object-contain">
                 </div>
-                <!-- Dark Blue Text for Monthly default, text-3xl for value, placeholder:text-lg for label -->
-                <input type="number" name="custom_amount" id="custom_amount" 
-                    class="focus:ring-[#3282CE] focus:border-[#3282CE] block w-full pl-8 pr-32 text-3xl placeholder:text-lg placeholder:font-normal font-bold text-blue-900 border-gray-300 rounded-lg py-4 border transition-colors bg-white" 
-                    placeholder="Amount" oninput="selectCustomAmount()">
                 
-                <!-- Suffix for /monthly -->
-                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                    <span id="amount-suffix" class="text-gray-500 text-lg font-semibold hidden">/monthly</span>
-                </div>
-            </div>
-            <p id="amount-error" class="text-red-500 text-sm mt-2 hidden pl-1"></p>
-        </div>
-
-        <!-- User Details Form Container -->
-        <div class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-5">
-            <div>
-                <label for="name" class="block text-lg font-semibold text-gray-700">
-                    Full Name <span id="name-req" class="text-red-500">*</span>
-                </label>
-                <input type="text" id="name" required class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE] transition-colors bg-white">
-                <p id="name-error" class="text-red-500 text-sm mt-1 hidden pl-1"></p>
+                <!-- Updated Headline (Serif) -->
+                <h2 class="mt-2 text-3xl font-black text-gray-900 leading-tight">Make a Difference Today</h2>
+                <p class="mt-2 text-lg text-gray-600 font-light">Your generosity keeps our community growing.</p>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div>
-                    <!-- Changed label from Email Address to Email -->
-                    <label for="email" class="block text-lg font-semibold text-gray-700">
-                        Email <span id="email-req" class="text-red-500">*</span>
-                    </label>
-                    <input type="email" id="email" required class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE] transition-colors bg-white">
-                    <p id="email-error" class="text-red-500 text-sm mt-1 hidden pl-1"></p>
-                </div>
-                <div>
-                    <label for="phone" class="block text-lg font-semibold text-gray-700">
-                        Phone <span id="phone-req" class="text-red-500">*</span>
-                    </label>
-                    <input type="tel" id="phone" required 
-                        placeholder="(555) 555-5555" maxlength="14" oninput="formatPhoneNumber(this)"
-                        class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE] transition-colors bg-white">
-                    <p id="phone-error" class="text-red-500 text-sm mt-1 hidden pl-1"></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Contribution Type & Notes Container -->
-        <div class="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-5">
-            <!-- Contribution Type Buttons -->
-            <div>
-                <label class="block text-lg font-semibold text-gray-700 mb-3">Contribution Type</label>
-                <div class="grid grid-cols-3 gap-4">
-                    <button type="button" onclick="selectType('Donation', this)"
-                        class="type-btn w-full border rounded-full py-3 text-base font-semibold focus:outline-none transition-all duration-200 bg-[#3282CE] text-white border-[#3282CE] shadow-md ring-2 ring-[#3282CE]/50 ring-offset-1">
-                        Donation
-                    </button>
-                    <button type="button" onclick="selectType('Scholarship', this)"
-                        class="type-btn w-full border rounded-full py-3 text-base font-semibold focus:outline-none transition-all duration-200 border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
-                        Scholarship <span class="text-sm font-normal block">(burs)</span>
-                    </button>
-                    <!-- Charity (sadaka) -->
-                    <button type="button" onclick="selectType('Charity', this)"
-                        class="type-btn w-full border rounded-full py-3 text-base font-semibold focus:outline-none transition-all duration-200 border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
-                        Charity <span class="text-sm font-normal block">(sadaka)</span>
-                    </button>
-                </div>
+            <!-- Frequency Toggle -->
+            <div class="flex rounded-full shadow-sm bg-gray-100 p-1.5" role="group">
+                <button type="button" id="btn-monthly" onclick="setFrequency(true)" 
+                    class="flex-1 px-6 py-3 text-lg font-semibold rounded-full transition-all duration-200">
+                    Monthly
+                </button>
+                <button type="button" id="btn-onetime" onclick="setFrequency(false)" 
+                    class="flex-1 px-6 py-3 text-lg font-semibold rounded-full transition-all duration-200">
+                    One Time
+                </button>
             </div>
 
-            <div>
-                <label for="notes" class="block text-lg font-semibold text-gray-700">Notes (Optional)</label>
-                <textarea id="notes" rows="2" class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE] bg-white"></textarea>
-            </div>
-        </div>
-
-        <!-- Cover Fees Checkbox -->
-        <div class="flex items-start pt-1 px-2">
-            <div class="flex items-center h-6">
-                <input id="cover_fees" name="cover_fees" type="checkbox" checked onchange="updateSummary()"
-                    class="focus:ring-[#3282CE] h-5 w-5 text-[#3282CE] border-gray-300 rounded cursor-pointer">
-            </div>
-            <div class="ml-3 text-base">
-                <label for="cover_fees" class="font-medium text-gray-700 cursor-pointer">Cover transaction fees</label>
-                <p class="text-gray-500 text-sm" id="fee-text">Add $0.00 to cover processing costs.</p>
-            </div>
-        </div>
-
-        <!-- Payment Summary Display -->
-        <div id="payment-summary" class="bg-[#3282CE]/5 border border-[#3282CE]/20 rounded-xl p-6 text-center hidden transition-all mt-4">
-            <p id="summary-text" class="text-[#3282CE] font-medium text-lg leading-relaxed">
-                <!-- Text injected by JS -->
+            <!-- Monthly Disclaimer -->
+            <p id="monthly-disclaimer" class="text-center text-sm text-gray-500 -mt-3 hidden transition-all">
+                <i class="ph-fill ph-heart text-red-400 align-middle mr-1"></i>
+                Cancel anytime.
             </p>
-        </div>
 
-        <!-- Submit Button -->
+            <!-- Amount Grid Container -->
+            <div class="bg-gray-50 rounded-xl p-6 border border-gray-100 shadow-inner">
+                <label class="block text-lg font-semibold text-gray-700 mb-3">Select Amount</label>
+                <div id="amount-grid" class="grid grid-cols-3 gap-3 mb-4">
+                    <!-- Buttons injected by JS -->
+                </div>
+                
+                <!-- Custom Amount -->
+                <div class="relative rounded-md shadow-sm mt-4">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span class="text-gray-500 text-2xl font-bold">$</span>
+                    </div>
+                    <input type="number" name="custom_amount" id="custom_amount" 
+                        class="focus:ring-[#3282CE] focus:border-[#3282CE] block w-full pl-8 pr-32 text-3xl placeholder:text-lg placeholder:font-normal font-bold text-blue-900 border-gray-300 rounded-lg py-4 border transition-colors bg-white shadow-sm" 
+                        placeholder="Amount" oninput="selectCustomAmount()">
+                    
+                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                        <span id="amount-suffix" class="text-gray-500 text-lg font-semibold hidden">/monthly</span>
+                    </div>
+                </div>
+                <p id="amount-error" class="text-red-500 text-sm mt-2 hidden pl-1"></p>
+            </div>
+
+            <!-- User Details Form Container -->
+            <div class="bg-gray-50 rounded-xl p-6 border border-gray-100 shadow-inner space-y-5">
+                <div>
+                    <label for="name" class="block text-lg font-semibold text-gray-700">
+                        Full Name <span id="name-req" class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="name" required class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE] transition-colors bg-white">
+                    <p id="name-error" class="text-red-500 text-sm mt-1 hidden pl-1"></p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label for="email" class="block text-lg font-semibold text-gray-700">
+                            Email <span id="email-req" class="text-red-500">*</span>
+                        </label>
+                        <input type="email" id="email" required class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE] transition-colors bg-white">
+                        <p id="email-error" class="text-red-500 text-sm mt-1 hidden pl-1"></p>
+                    </div>
+                    <div>
+                        <label for="phone" class="block text-lg font-semibold text-gray-700">
+                            Phone <span id="phone-req" class="text-red-500">*</span>
+                        </label>
+                        <input type="tel" id="phone" required 
+                            placeholder="(555) 555-5555" maxlength="14" oninput="formatPhoneNumber(this)"
+                            class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE] transition-colors bg-white">
+                        <p id="phone-error" class="text-red-500 text-sm mt-1 hidden pl-1"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contribution Type & Notes Container -->
+            <div class="bg-gray-50 rounded-xl p-6 border border-gray-100 shadow-inner space-y-5">
+                <div>
+                    <label class="block text-lg font-semibold text-gray-700 mb-3">Contribution Type</label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <button type="button" onclick="selectType('Donation', this)"
+                            class="type-btn w-full border rounded-full py-3 text-base font-semibold focus:outline-none transition-all duration-200 bg-[#3282CE] text-white border-[#3282CE] shadow-md ring-2 ring-[#3282CE]/50 ring-offset-1">
+                            Donation
+                        </button>
+                        <button type="button" onclick="selectType('Scholarship', this)"
+                            class="type-btn w-full border rounded-full py-3 text-base font-semibold focus:outline-none transition-all duration-200 border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+                            Scholarship <span class="text-sm font-normal block">(burs)</span>
+                        </button>
+                        <button type="button" onclick="selectType('Charity', this)"
+                            class="type-btn w-full border rounded-full py-3 text-base font-semibold focus:outline-none transition-all duration-200 border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+                            Charity <span class="text-sm font-normal block">(sadaka)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="notes" class="block text-lg font-semibold text-gray-700">Notes (Optional)</label>
+                    <textarea id="notes" rows="2" class="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-lg focus:outline-none focus:ring-[#3282CE] focus:border-[#3282CE] bg-white"></textarea>
+                </div>
+            </div>
+
+            <!-- Cover Fees Checkbox -->
+            <div class="flex items-start pt-1 px-2">
+                <div class="flex items-center h-6">
+                    <input id="cover_fees" name="cover_fees" type="checkbox" checked onchange="updateSummary()"
+                        class="focus:ring-[#3282CE] h-5 w-5 text-[#3282CE] border-gray-300 rounded cursor-pointer">
+                </div>
+                <div class="ml-3 text-base">
+                    <label for="cover_fees" class="font-medium text-gray-700 cursor-pointer">Cover transaction fees</label>
+                    <p class="text-gray-500 text-sm" id="fee-text">Add $0.00 to cover processing costs.</p>
+                </div>
+            </div>
+
+            <!-- Payment Summary Display -->
+            <div id="payment-summary" class="bg-[#3282CE]/5 border border-[#3282CE]/20 rounded-xl p-6 text-center hidden transition-all mt-4">
+                <p id="summary-text" class="text-[#3282CE] font-medium text-lg leading-relaxed">
+                    <!-- Text injected by JS -->
+                </p>
+            </div>
+
+            <!-- Submit Button (Dynamic Text) -->
         <button id="submit-btn" onclick="handleCheckout()" 
-            class="group relative w-full flex justify-center py-4 px-4 border border-transparent text-lg font-bold rounded-full text-white bg-[#3282CE] hover:bg-[#2868a5] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3282CE] transition-colors shadow-lg mt-6">
+            class="group relative w-full flex justify-center py-4 px-4 border border-transparent text-lg font-bold rounded-full text-white bg-[#3282CE] hover:bg-[#2868a5] hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3282CE] transition-all shadow-lg shadow-blue-500/30 mt-6">
             <span class="absolute left-0 inset-y-0 flex items-center pl-6">
-                <i class="ph-bold ph-lock-key text-blue-200 group-hover:text-blue-100 text-xl"></i>
+                <i class="ph-bold ph-heart text-blue-200 group-hover:text-white text-xl"></i>
             </span>
-            Proceed to Payment
+            <span id="submit-text">Start My Donation</span>
         </button>
         
         <p id="error-message" class="text-red-500 text-base text-center hidden mt-4 font-semibold"></p>
@@ -180,6 +222,16 @@
                 Already a monthly supporter? <span class="underline decoration-2">Access the Customer Portal</span> to manage your donations.
             </a>
         </div>
+
+        <!-- Stripe Footer -->
+        <div class="mt-8 pt-6 border-t border-gray-100 text-center">
+            <div class="flex items-center justify-center space-x-2 text-gray-400 opacity-80 hover:opacity-100 transition-opacity">
+                <i class="ph-fill ph-lock-key text-lg"></i>
+                <span class="text-sm font-medium">Secured by</span>
+                <!-- Stripe Logo Image -->
+                <img src="stripe.png" alt="Stripe" class="h-6 w-auto">
+            </div>
+        </div>
     </div>
 
     <!-- Main Logic -->
@@ -189,19 +241,19 @@
         const FEE_FIXED = 0.30;    // $0.30 Fixed fee
 
         // --- STYLES ---
-        const BTN_BASE = "amount-btn w-full border rounded-full py-3 text-lg font-semibold focus:outline-none transition-all duration-200";
+        const BTN_BASE = "amount-btn w-full border rounded-full py-3 text-lg font-semibold focus:outline-none transition-all duration-200 relative overflow-hidden";
         const BTN_INACTIVE = `${BTN_BASE} border-gray-300 bg-white text-gray-700 hover:bg-gray-50`;
-        const BTN_ACTIVE = `${BTN_BASE} bg-[#3282CE] text-white border-[#3282CE] shadow-md ring-2 ring-[#3282CE]/50 ring-offset-1`;
-
+        // Removed specific active string from here, handling in JS to manage icon visibility
+        
         let configData = {
             monthly_amounts: [50, 100, 200, 300, 500, 1000],
             onetime_amounts: [20, 30, 50, 100, 200],
             customer_portal_link: "#"
         };
         
-        let isMonthly = true; // Default
+        let isMonthly = true; 
         let selectedAmount = null;
-        let selectedType = 'Donation'; // Default Contribution Type
+        let selectedType = 'Donation'; 
 
         async function loadConfig() {
             try {
@@ -233,11 +285,12 @@
             const btnOnetime = document.getElementById('btn-onetime');
             const suffix = document.getElementById('amount-suffix');
             const customInput = document.getElementById('custom_amount');
+            const disclaimer = document.getElementById('monthly-disclaimer');
+            const submitText = document.getElementById('submit-text');
             
             const activeClasses = ['bg-[#3282CE]', 'text-white', 'shadow-md'];
             const inactiveClasses = ['text-gray-500', 'hover:text-gray-900'];
 
-            // Toggle Contact Field Requirements
             const nameInput = document.getElementById('name');
             const emailInput = document.getElementById('email');
             const phoneInput = document.getElementById('phone');
@@ -249,14 +302,15 @@
                 btnOnetime.classList.remove(...activeClasses);
                 btnOnetime.classList.add(...inactiveClasses);
                 
-                // Show suffix for monthly
                 suffix.classList.remove('hidden');
+                disclaimer.classList.remove('hidden');
+                
+                // Update Button Text
+                submitText.textContent = "Start My Donation";
 
-                // Custom amount color: Dark Blue
                 customInput.classList.remove('text-purple-700');
                 customInput.classList.add('text-blue-900');
 
-                // Make fields mandatory with *
                 nameInput.required = true;
                 emailInput.required = true;
                 phoneInput.required = true;
@@ -274,33 +328,55 @@
                 btnMonthly.classList.remove(...activeClasses);
                 btnMonthly.classList.add(...inactiveClasses);
                 
-                // Hide suffix for one-time
                 suffix.classList.add('hidden');
+                disclaimer.classList.add('hidden');
 
-                // Custom amount color: Purple
+                // Update Button Text
+                submitText.textContent = "Donate Now";
+
                 customInput.classList.remove('text-blue-900');
                 customInput.classList.add('text-purple-700');
 
-                // Make fields optional with (Optional) text
                 nameInput.required = false;
-                emailInput.required = false;
                 phoneInput.required = false;
                 
-                reqIds.forEach(id => {
+                ['name-req', 'phone-req'].forEach(id => {
                     const el = document.getElementById(id);
                     el.classList.remove('hidden');
                     el.textContent = '(Optional)';
                     el.className = 'text-gray-400 text-sm font-normal ml-1';
                 });
+
+                emailInput.required = true;
+                const emailReq = document.getElementById('email-req');
+                emailReq.classList.remove('hidden');
+                emailReq.textContent = '*';
+                emailReq.className = 'text-red-500';
                 
-                // Clear any existing validation errors on these fields when switching to optional
                 clearErrors();
             }
 
             renderButtons();
-            selectedAmount = null;
-            document.getElementById('custom_amount').value = '';
-            updateSummary();
+            
+            const defaultVal = isMonthly ? 100 : 30;
+            const buttons = document.querySelectorAll('#amount-grid button');
+            let found = false;
+            
+            for (let btn of buttons) {
+               // Checking includes to match "$100" string
+               if (btn.innerText.includes(`$${defaultVal}`)) {
+                   selectAmount(defaultVal, btn);
+                   found = true;
+                   break;
+               }
+            }
+            
+            if (!found && buttons.length > 0) {
+                const val = parseInt(buttons[0].innerText.replace('$',''));
+                selectAmount(val, buttons[0]);
+            }
+           
+           clearErrors();
         }
 
         function renderButtons() {
@@ -313,7 +389,8 @@
             amounts.forEach(amount => {
                 const btn = document.createElement('button');
                 btn.className = BTN_INACTIVE;
-                btn.textContent = `$${amount}`;
+                // Add heart icon span
+                btn.innerHTML = `$${amount} <i class="ph-fill ph-heart heart-icon ml-1 text-white hidden"></i>`;
                 btn.onclick = () => selectAmount(amount, btn);
                 grid.appendChild(btn);
             });
@@ -321,11 +398,24 @@
 
         function selectAmount(amount, btnElement) {
             selectedAmount = amount;
-            // V2 Update: Populate Custom Amount input with selected amount
             document.getElementById('custom_amount').value = amount;
             
-            document.querySelectorAll('.amount-btn').forEach(b => b.className = BTN_INACTIVE);
-            if(btnElement) btnElement.className = BTN_ACTIVE;
+            document.querySelectorAll('.amount-btn').forEach(b => {
+                b.className = BTN_INACTIVE;
+                b.classList.remove('selected');
+                // Hide heart
+                const icon = b.querySelector('.heart-icon');
+                if(icon) icon.classList.add('hidden');
+            });
+
+            if(btnElement) {
+                // Apply active class manually to handle the icon
+                btnElement.className = `${BTN_BASE} selected`; // selected class handles bg/shadow
+                // Show heart
+                const icon = btnElement.querySelector('.heart-icon');
+                if(icon) icon.classList.remove('hidden');
+            }
+            
             updateSummary();
             clearErrors(); 
         }
@@ -333,7 +423,13 @@
         function selectCustomAmount() {
             const input = document.getElementById('custom_amount');
             selectedAmount = parseFloat(input.value);
-            document.querySelectorAll('.amount-btn').forEach(b => b.className = BTN_INACTIVE);
+            
+            document.querySelectorAll('.amount-btn').forEach(b => {
+                b.className = BTN_INACTIVE;
+                b.classList.remove('selected');
+                const icon = b.querySelector('.heart-icon');
+                if(icon) icon.classList.add('hidden');
+            });
             updateSummary();
             clearErrors(); 
         }
@@ -363,24 +459,18 @@
             }
 
             if (baseAmount && baseAmount > 0) {
-                // Calculate Fee Logic
                 let totalToCharge, netForRaindrop, feeForBank;
 
                 if (coverFees) {
-                    // Logic: Donor covers fees. Raindrop gets Base.
-                    // Total = (Base + 0.30) / (1 - 0.022)
                     totalToCharge = (baseAmount + FEE_FIXED) / (1 - FEE_PERCENT);
                     feeForBank = totalToCharge - baseAmount;
                     netForRaindrop = baseAmount;
                 } else {
-                    // Logic: Donor does NOT cover fees. Raindrop pays fees from Base.
-                    // Total = Base
                     totalToCharge = baseAmount;
                     feeForBank = (baseAmount * FEE_PERCENT) + FEE_FIXED;
                     netForRaindrop = baseAmount - feeForBank;
                 }
                 
-                // Update checkbox helper text (always show fee needed to cover)
                 const feeToCover = ((baseAmount + FEE_FIXED) / (1 - FEE_PERCENT)) - baseAmount;
                 const formattedFeeHelper = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(feeToCover);
                 feeText.textContent = `Add ${formattedFeeHelper} to cover processing costs.`;
@@ -395,7 +485,6 @@
                 if (isMonthly) text += ' Monthly';
                 else text += ' One time';
 
-                // Display Breakdown with Frontend Math
                 text += `<div class="text-base text-gray-500 mt-2 font-normal">(${fmtNet} for Raindrop Dallas + ${fmtFee} bank fees)</div>`;
 
                 summaryText.innerHTML = text;
@@ -405,7 +494,6 @@
             }
         }
 
-        // --- ERROR HANDLING ---
         function clearErrors() {
             document.getElementById('error-message').classList.add('hidden');
             ['amount-error', 'name-error', 'email-error', 'phone-error'].forEach(id => {
@@ -452,7 +540,6 @@
                 return;
             }
 
-            // V2 Update: Minimum Amount Validation
             const minAmount = isMonthly ? 10 : 5;
             const maxAmount = 10000;
             
@@ -466,21 +553,16 @@
                 return;
             }
             
-            // Validation: Only require fields if isMonthly is true
+            if (!email) { showError('email', "Please enter your Email Address."); return; }
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) { showError('email', "Please enter a valid email address."); return; }
+
             if (isMonthly) {
                 if (!name) { showError('name', "Please enter your Full Name."); return; }
-                if (!email) { showError('email', "Please enter your Email Address."); return; }
-                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailPattern.test(email)) { showError('email', "Please enter a valid email address."); return; }
                 if (!phone) { showError('phone', "Please enter your Phone Number."); return; }
                 const phoneClean = phone.replace(/\D/g, '');
                 if (phoneClean.length !== 10) { showError('phone', "Please enter a valid 10-digit US phone number."); return; }
             } else {
-                // Optional validation for One-Time if fields ARE filled
-                if (email) {
-                    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailPattern.test(email)) { showError('email', "Please enter a valid email address."); return; }
-                }
                 if (phone) {
                     const phoneClean = phone.replace(/\D/g, '');
                     if (phoneClean.length !== 10) { showError('phone', "Please enter a valid 10-digit US phone number."); return; }
@@ -491,10 +573,8 @@
             let amountToSend;
 
             if (coverFees) {
-                // Gross up calculation inside handleCheckout as requested
                 amountToSend = (selectedAmount + FEE_FIXED) / (1 - FEE_PERCENT);
             } else {
-                // Send raw amount
                 amountToSend = selectedAmount;
             }
 
@@ -539,7 +619,6 @@
             }
         }
 
-        // Initialize
         loadConfig();
     </script>
 </body>
