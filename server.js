@@ -29,7 +29,7 @@ const loadConfig = () => {
         return {
             monthly_amounts: [50, 100, 200, 300, 500, 1000],
             onetime_amounts: [20, 30, 50, 100, 200],
-            customer_portal_link: "https://billing.stripe.com/p/login/test_28E6oI3tO1h76Ku71cd3i00"
+            customer_portal_link: "https://billing.stripe.com/p/login/dRm8wQaUTdeObxl4Z3bAs00"
         };
     }
 };
@@ -176,3 +176,4 @@ app.post('/create-checkout-session', async (req, res) => {
 
 const PORT = 4242;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+
