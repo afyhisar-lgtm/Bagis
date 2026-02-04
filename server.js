@@ -97,16 +97,24 @@ app.get('/api/checkout-session', async (req, res) => {
 app.post('/create-checkout-session', async (req, res) => {
     const { amount, isMonthly, customerDetails } = req.body;
     // Extract contributionType from the details sent by frontend
-    const { name, email, phone, notes, contributionType } = customerDetails; 
-    
-    // Server-side validation for amount
-    if (!amount || isNaN(amount) || amount <= 0) {
+    const { name, email, phone, notes, contributionType } = customerDetails || {};
+
+    // Normalize and validate amount on server side (prevent negative/zero values)
+    const parsedAmount = parseFloat(amount);
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
         return res.status(400).json({ error: 'Invalid donation amount.' });
     }
-    
-    // Optional: Enforce max amount on server too for safety
-    if (amount > 10000) {
-         return res.status(400).json({ error: 'Donation amount exceeds the maximum limit of $10,000.' });
+
+    // Convert to cents and ensure at least 1 cent
+    const unitAmount = Math.round(parsedAmount * 100);
+    if (unitAmount < 1) {
+        return res.status(400).json({ error: 'Invalid donation amount (too small).' });
+    }
+
+    // Optional: Enforce max amount on server too for safety (e.g., $10,000)
+    const MAX_CENTS = 10000 * 100; // $10,000 in cents
+    if (unitAmount > MAX_CENTS) {
+        return res.status(400).json({ error: 'Donation amount exceeds the maximum limit of $10,000.' });
     }
     
     // Default to localhost if DOMAIN is not set in .env
@@ -115,6 +123,7 @@ app.post('/create-checkout-session', async (req, res) => {
     try {
         // Construct Metadata object to store in Stripe
         const metadata = {
+            Source_app: 'Bagis-Web',
             customer_name: name,
             customer_email: email, // Added email to metadata
             customer_phone: phone,
@@ -133,12 +142,16 @@ app.post('/create-checkout-session', async (req, res) => {
                         name: isMonthly ? `Monthly ${contributionType || 'Donation'}` : `One-Time ${contributionType || 'Donation'}`,
                         description: isMonthly ? 'Recurring monthly support' : 'Single contribution',
                     },
-                    unit_amount: Math.round(amount * 100), // Stripe expects cents
+                    unit_amount: unitAmount, // Stripe expects cents (validated server-side)
+                    // Ensure we do not apply tax via price definition
+                    tax_behavior: 'unspecified',
                     ...(isMonthly && { recurring: { interval: 'month' } }),
                 },
                 quantity: 1,
             }],
             mode: isMonthly ? 'subscription' : 'payment',
+            // Explicitly disable Stripe Automatic Tax for this Checkout Session
+            automatic_tax: { enabled: false },
             // Pass session_id to success page
             success_url: `${domain}/success.html?session_id={CHECKOUT_SESSION_ID}`, 
             cancel_url: `${domain}/bagis.html`,    // Redirect back to form on cancel
